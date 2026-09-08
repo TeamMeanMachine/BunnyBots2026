@@ -1,0 +1,6 @@
+[submodule "meanlib"]
+	path = meanlib
+	url = https://github.com/TeamMeanMachine/meanlib.git
+[submodule "ParticleFilter"]
+	path = ParticleFilter
+	url = https://github.com/TeamMeanMachine/ParticleFilter/
