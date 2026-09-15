@@ -1,39 +1,24 @@
 package frc.team2471.bunnyBots2026
 
+import edu.wpi.first.apriltag.AprilTag
 import edu.wpi.first.apriltag.AprilTagFieldLayout
-import edu.wpi.first.apriltag.AprilTagFields
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation3d
+import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.units.measure.Distance
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj.Filesystem
 import frc.team2471.bunnyBots2026.FieldManager.reflectAcrossField
 import frc.team2471.bunnyBots2026.FieldManager.rotateAroundField
-import frc.team2471.bunnyBots2026.Robot.isAutonomous
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
-import org.team2471.frc.lib.control.commands.runCommand
-import org.team2471.frc.lib.control.commands.runOnceCommand
-import org.team2471.frc.lib.control.commands.sequenceCommand
-import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.math.toPose2d
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.angleTo
-import org.team2471.frc.lib.util.demoMode
-import org.team2471.frc.lib.util.isBlueAlliance
 import org.team2471.frc.lib.util.isRedAlliance
-import kotlin.math.absoluteValue
-import kotlin.math.floor
-import kotlin.math.sign
 
 object FieldManager {
     private val table = NetworkTableInstance.getDefault().getTable("FieldManager")
 
-    val aprilTagFieldLayout: AprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded) //AprilTagFieldLayout(Filesystem.getDeployDirectory().path + "/2026Field.json")
+    val aprilTagFieldLayout: AprilTagFieldLayout = AprilTagFieldLayout(Filesystem.getDeployDirectory().path + "/bunnybotsTags.json")
     val allAprilTags = aprilTagFieldLayout.tags
 
     // x
@@ -48,12 +33,45 @@ object FieldManager {
 
     val fieldCenter = fieldDimensions / 2.0
 
+    val towerTagToCenterTransform = Transform3d(allAprilTags.getID(3).pose.y - allAprilTags.getID(2).pose.y, 0.0, 0.0, Rotation3d.kZero)
+    val allTowerPositions: List<Translation2d> = List(8) {
+        allAprilTags.getID(it + 1).pose.transformBy(towerTagToCenterTransform).translation.toTranslation2d()
+    }
+    val allTowers: Map<Int, Tower> =
+        allTowerPositions.mapIndexed { index, pose -> Tower(index, pose) }.associateBy { it.id }
 
     val lineupRadius = 3.0.feet
 
-    val closestTowerPose get() = Pose2d()
+    @get:AutoLogOutput(key = "FieldManager/closestTowerPose")
+    val closestTowerPose get() = getClosestTowerPose(Drive.localizer.pose)
+
+    init {
+    }
+
+    fun lateInit() {
+        Logger.recordOutput("FieldManager/allTags", *allAprilTags.map { it.pose }.toTypedArray())
+        Logger.recordOutput("FieldManager/towerTagToCenterTransform", towerTagToCenterTransform)
+        Logger.recordOutput("FieldManager/allTowers", *allTowerPositions.toTypedArray())
+    }
 
 
+    fun getClosestTower(pose: Pose2d): Tower {
+        return allTowers.values.minBy { it.pose.getDistance(pose.translation) }
+    }
+    fun getClosestTowerPose(pose: Pose2d): Translation2d {
+        return getClosestTower(pose).pose
+    }
+
+
+
+    data class Tower(val id: Int, val pose: Translation2d, var stackSize: Int = 0)
+
+    /**
+     * Extends an apriltag list and searches for the tag with the given id.
+     */
+    fun List<AprilTag>.getID(id: Int): AprilTag {
+        return this.find { it.ID == id } ?: throw IllegalArgumentException("Tag ID $id not found")
+    }
 
     /**
      * Reflects [Translation2d] across the midline of the field. Useful for mirrored field layouts (2023, 2024).

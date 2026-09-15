@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Alert
-import edu.wpi.first.wpilibj.GenericHID
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.control.MeanCommandXboxController
@@ -85,7 +84,7 @@ object OI: SubsystemBase("OI") {
         println("inside OI init")
 
         // Default command, normal field-relative drive
-        Drive.defaultCommand = Drive.joystickDrive()
+        Drive.defaultCommand = Drive.joystickPercentageDrive()
 
         // Zero Gyro
         driverController.back().onTrue({

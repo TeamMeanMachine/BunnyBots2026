@@ -45,7 +45,7 @@ object CANivores {
 }
 
 object CANSensors {
-    const val PIGEON = 64
+    const val PIGEON = -1
 }
 
 object I2CPort {

@@ -78,7 +78,6 @@ object Robot : LoggedRobot() {
     val intake = Intake
     val turret = Turret
     val extendavator = Extendavator
-    val fieldManager = FieldManager
 
     var allSubsystems = arrayOf(drive, intake, turret, extendavator, oi)
 
@@ -114,6 +113,7 @@ object Robot : LoggedRobot() {
         Logger.start()
         // Call all subsystems, make sure their init's run
         allSubsystems.forEach { println("activating subsystem ${it.name}") }
+        FieldManager.lateInit()
         println("FieldManager thinks the field is ${FieldManager.fieldDimensions.asFeet} feet big")
         println("We see ${Autonomous.paths.size} paths and they are made on the ${if (Drive.choreoPathsStartOnRed) "red" else "blue"} side.")
 
