@@ -6,17 +6,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import frc.team2471.bunnyBots2026.tests.*
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
 import org.team2471.frc.lib.control.Autonomi
-import org.team2471.frc.lib.control.commands.beforeWait
-import org.team2471.frc.lib.control.commands.finallyRun
-import org.team2471.frc.lib.control.commands.parallelCommand
-import org.team2471.frc.lib.control.commands.runCommand
-import org.team2471.frc.lib.control.commands.runOnceCommand
-import org.team2471.frc.lib.control.commands.sequenceCommand
-import org.team2471.frc.lib.control.commands.waitUntilCommand
-import org.team2471.frc.lib.swerve.sideToSideFlip
-import org.team2471.frc.lib.units.feet
-import org.team2471.frc.lib.units.meters
-import kotlin.math.absoluteValue
 
 
 object Autonomous: Autonomi() {
@@ -67,7 +56,7 @@ object Autonomous: Autonomi() {
     }
 
     fun warmupDriveAlongPath(): Command {
-        val warmupPath = paths["LeftSideDoubleSwipe"]!!.sideToSideFlip(true)
-        return Drive.driveAlongChoreoPath(warmupPath.getSplit(0).get(), exitSupplier = { percent, error -> percent >= 1.0 || Robot.isEnabled}).ignoringDisable(true)
+        val warmupPath = paths["LeftSideDoubleSwipe"]!!.mirrorY()
+        return Drive.driveAlongChoreoPath(warmupPath, exitSupplier = { percent, error -> percent >= 1.0 || Robot.isEnabled}).ignoringDisable(true)
     }
 }

@@ -49,6 +49,11 @@ object FieldManager {
     val fieldCenter = fieldDimensions / 2.0
 
 
+    val lineupRadius = 3.0.feet
+
+    val closestTowerPose get() = Pose2d()
+
+
 
     /**
      * Reflects [Translation2d] across the midline of the field. Useful for mirrored field layouts (2023, 2024).
@@ -123,11 +128,4 @@ object FieldManager {
      * Returns if the [Pose2d] is closer to your opponent alliance's side of the field.
      */
     fun Pose2d.onOpposingAllianceSide() = !this.onFriendlyAllianceSide()
-
-
-    enum class PassingSide {
-        BOTH,
-        OUTPOST,
-        DEPOT
-    }
 }
