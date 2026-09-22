@@ -1,7 +1,6 @@
 package frc.team2471.bunnyBots2026
 
 import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.wpilibj2.command.Command
 import org.team2471.frc.lib.control.commands.finallyRun
@@ -15,22 +14,22 @@ import org.team2471.frc.lib.util.angleTo
 import kotlin.math.round
 
 
-fun aim(targetSupplier: () -> Pose2d = { FieldManager.closestTowerPose }): Command {
+fun aim(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose }): Command {
     return runCommand(Extendavator, Turret) {
-        val relativePose = Drive.localizer.pose.relativeTo(targetSupplier.invoke())
-        val angle = relativePose.translation.angle.measure
-        val distance = relativePose.translation.norm.meters
+        val relativeTranslation = Drive.localizer.pose.translation.minus(targetSupplier.invoke())
+        val angle = relativeTranslation.angle.measure
+        val distance = relativeTranslation.norm.meters
         Extendavator.extensionSetpoint = distance
         Turret.fieldCentricSetpoint = angle
         // raise elevator
     }.finallyRun { Extendavator.stow() }
 }
 
-fun lineUp(targetSupplier: () -> Pose2d = { FieldManager.closestTowerPose }): Command {
+fun lineUp(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose }): Command {
     return parallelCommand(
         aim(targetSupplier),
         runCommand(Extendavator, Turret, Drive) {
-            val towerTranslation = targetSupplier.invoke().translation
+            val towerTranslation = targetSupplier.invoke()
             val currentTranslation = Drive.localizer.pose.translation
             val angleFromTower = towerTranslation.angleTo(currentTranslation).asRotation2d
             val angleToTower = currentTranslation.angleTo(towerTranslation).asRotation2d

@@ -23,6 +23,14 @@ object Falcons {
 
     const val BACK_LEFT_DRIVE = 10
     const val BACK_LEFT_STEER = 11
+
+    const val INTAKE_ROLLER = 99
+    const val INTAKE_WRIST = 99
+    const val ELEVATOR_0 = 99
+    const val ELEVATOR_1 = 99
+    const val EXTENSION = 99
+    const val TURRET_0 = 99
+    const val TURRET_1 = 99
 }
 
 object Talons {
