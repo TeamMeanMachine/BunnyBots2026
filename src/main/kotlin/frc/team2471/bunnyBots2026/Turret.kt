@@ -8,7 +8,7 @@ import org.team2471.frc.lib.hardware.ctre.currentLimits
 import org.team2471.frc.lib.units.degrees
 
 object Turret: SubsystemBase("Turret") {
-    val turretMotor = TalonFX(Falcons.TURRET_0)
+    val turretMotor = TalonFX(Talons.TURRET_0)
 
 
     var fieldCentricSetpoint = 0.0.degrees
@@ -17,6 +17,6 @@ object Turret: SubsystemBase("Turret") {
         turretMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
         }
-        turretMotor.addFollower(Falcons.TURRET_1)
+        turretMotor.addFollower(Talons.TURRET_1)
     }
 }
