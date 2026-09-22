@@ -11,7 +11,7 @@ object AnalogSensors {
 object DigitalSensors {
 }
 
-object Falcons {
+object Talons {
     const val FRONT_RIGHT_DRIVE = 23
     const val FRONT_RIGHT_STEER = 22
 
@@ -31,9 +31,6 @@ object Falcons {
     const val EXTENSION = 99
     const val TURRET_0 = 99
     const val TURRET_1 = 99
-}
-
-object Talons {
 }
 
 object CANCoders {

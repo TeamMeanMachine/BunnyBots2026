@@ -9,14 +9,14 @@ import org.team2471.frc.lib.hardware.ctre.currentLimits
 import org.team2471.frc.lib.units.degrees
 
 object Intake: SubsystemBase("Intake") {
-    val rollerMotor = TalonFX(Falcons.INTAKE_ROLLER)
+    val rollerMotor = TalonFX(Talons.INTAKE_ROLLER)
     var rollerMotorSetpoint = 0.0
         set(value) {
             rollerMotor.setControl(DutyCycleOut(value))
             field = value
         }
-    val wristMotor = TalonFX(Falcons.INTAKE_WRIST)
-    var wristMotorSetPoint = 0.0.degrees
+    val wristMotor = TalonFX(Talons.INTAKE_WRIST)
+    var wristMotorSetpoint = 0.0.degrees
         set(value) {
             wristMotor.setControl(PositionVoltage(value))
             field = value
