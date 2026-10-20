@@ -4,14 +4,18 @@ import com.ctre.phoenix6.controls.DutyCycleOut
 import com.ctre.phoenix6.controls.NeutralOut
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.hardware.TalonFX
+import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
 import org.team2471.frc.lib.hardware.ctre.currentLimits
+import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.unWrap
 
 object Turret: SubsystemBase("Turret") {
     val ZERO_POSITION = 0.0.degrees
@@ -20,10 +24,12 @@ object Turret: SubsystemBase("Turret") {
     val zeroLimitSwitch = DigitalInput(DigitalSensors.TURRET_ZERO_SWITCH)
     val zeroLimitSwitchPressed get() = zeroLimitSwitch.get()
 
+    // TODO: factor in turret offset from drivebase and extendavator offset from turret, if applicable
+
     var fieldCentricSetpoint = 0.0.degrees
         set(value) {
+            turretMotor.setControl(PositionVoltage((field - Drive.heading.measure).unWrap(fieldCentricSetpoint)))
             field = value
-            turretMotor.setControl(PositionVoltage(field - Drive.heading.measure))
         }
 
     init {
@@ -31,6 +37,10 @@ object Turret: SubsystemBase("Turret") {
             currentLimits(30.0, 40.0, 1.0)
         }
         turretMotor.addFollower(Talons.TURRET_1)
+    }
+
+    override fun periodic() {
+        Logger.recordOutput("Turret/turretPose", Pose2d(Drive.localizer.pose.translation, fieldCentricSetpoint.asRotation2d))
     }
 
     fun zero(): Command = run {

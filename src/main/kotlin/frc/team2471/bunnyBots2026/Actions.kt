@@ -16,13 +16,13 @@ import kotlin.math.round
 
 fun aim(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose }): Command {
     return runCommand(Extendavator, Turret) {
-        val relativeTranslation = Drive.localizer.pose.translation.minus(targetSupplier.invoke())
+        val relativeTranslation = targetSupplier.invoke().minus(Drive.localizer.pose.translation)
         val angle = relativeTranslation.angle.measure
         val distance = relativeTranslation.norm.meters
         Extendavator.extensionSetpoint = distance
         Turret.fieldCentricSetpoint = angle
         // raise elevator
-    }.finallyRun { Extendavator.stow() }
+    }.finallyRun(Extendavator.stow())
 }
 
 fun lineUp(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose }): Command {

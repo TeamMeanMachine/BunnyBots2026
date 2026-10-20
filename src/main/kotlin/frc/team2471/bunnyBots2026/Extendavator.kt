@@ -2,6 +2,7 @@ package frc.team2471.bunnyBots2026
 
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.hardware.TalonFX
+import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
@@ -35,7 +36,8 @@ object Extendavator: SubsystemBase("Extendavator") {
         }
     }
 
-    fun stow() {
-
+    fun stow(): Command = runOnce {
+        extensionSetpoint = 0.0.feet
+        heightSetpoint = 0.0.feet
     }
 }
