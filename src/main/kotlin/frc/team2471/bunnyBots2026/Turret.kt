@@ -28,7 +28,7 @@ object Turret: SubsystemBase("Turret") {
 
     var fieldCentricSetpoint = 0.0.degrees
         set(value) {
-            turretMotor.setControl(PositionVoltage((field - Drive.heading.measure).unWrap(fieldCentricSetpoint)))
+            turretMotor.setControl(PositionVoltage((value - Drive.heading.measure).unWrap(fieldCentricSetpoint)))
             field = value
         }
 
