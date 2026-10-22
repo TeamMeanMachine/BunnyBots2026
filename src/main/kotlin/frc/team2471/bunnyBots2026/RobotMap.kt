@@ -9,7 +9,7 @@ object AnalogSensors {
 }
 
 object DigitalSensors {
-    const val TURRET_ZERO_SWITCH = -1
+    const val TURRET_ZERO_SWITCH = 0
 }
 
 object Talons {

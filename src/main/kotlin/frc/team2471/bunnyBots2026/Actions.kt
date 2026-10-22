@@ -1,6 +1,7 @@
 package frc.team2471.bunnyBots2026
 
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.wpilibj2.command.Command
 import org.team2471.frc.lib.control.commands.finallyRun
@@ -26,16 +27,16 @@ fun aim(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose })
 }
 
 fun lineUp(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose }): Command {
+    fun getLineUpHeading(): Rotation2d {
+        val towerTranslation = targetSupplier()
+        val currentTranslation = Drive.localizer.pose.translation
+        val angleToTower = currentTranslation.angleTo(towerTranslation).asRotation2d
+        val headingError = (angleToTower - Drive.heading).rotations
+        return angleToTower - (round(headingError * 4.0) / 4.0).rotations.asRotation2d
+    }
+
     return parallelCommand(
         aim(targetSupplier),
-        runCommand(Extendavator, Turret, Drive) {
-            val towerTranslation = targetSupplier.invoke()
-            val currentTranslation = Drive.localizer.pose.translation
-            val angleFromTower = towerTranslation.angleTo(currentTranslation).asRotation2d
-            val angleToTower = currentTranslation.angleTo(towerTranslation).asRotation2d
-            val pointOnCircle = towerTranslation + Translation2d(FieldManager.lineupRadius.asMeters, angleFromTower)
-            val headingError = (angleToTower - Drive.heading).rotations
-            Drive.driveToPoint(Pose2d(pointOnCircle, angleToTower - (round(headingError * 4.0) / 4.0).rotations.asRotation2d))
-        }
+        Drive.joystickDriveAlongCircle(targetSupplier, FieldManager.lineupRadius, ::getLineUpHeading, { Drive.localizer.pose }) // ::getLineUpPose is the same as { getLineUpPose() }
     )
 }

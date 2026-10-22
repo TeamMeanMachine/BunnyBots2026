@@ -134,7 +134,7 @@ object Drive: SwerveDriveSubsystem(TunerConstants.drivetrainConstants, *TunerCon
     init {
         println("inside Drive init")
 
-        useMapleSim = true
+        useMapleSim = false
 
         useAprilTagsEntry.setBoolean(true)
         increaseDriveCurrentEntry.setBoolean(false)

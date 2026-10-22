@@ -86,6 +86,10 @@ object OI: SubsystemBase("OI") {
         // Default command, normal field-relative drive
         Drive.defaultCommand = Drive.joystickPercentageDrive()
 
+
+        driverController.a().whileTrue(lineUp())
+
+
         // Zero Gyro
         driverController.back().onTrue({
                 println("zero gyro")
