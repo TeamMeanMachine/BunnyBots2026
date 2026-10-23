@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
 import org.team2471.frc.lib.hardware.ctre.currentLimits
+import org.team2471.frc.lib.hardware.ctre.sensorToMechanismRatio
 import org.team2471.frc.lib.units.asFeet
 import org.team2471.frc.lib.units.feet
 
@@ -33,6 +34,8 @@ object Extendavator: SubsystemBase("Extendavator") {
         elevatorMotor.addFollower(Talons.ELEVATOR_1)
         extensionMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
+            //        Motor to sprocket ratio * 12 tooth sprocket * 0.25in chain link length
+            sensorToMechanismRatio((14.0/40.0) * 12.0 * 0.25)
         }
     }
 
