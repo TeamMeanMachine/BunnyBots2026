@@ -88,6 +88,9 @@ object OI: SubsystemBase("OI") {
 
 
         driverController.a().whileTrue(lineUp())
+        driverController.b().whileTrue(Turret.pointTowardDriveTranslation())
+        driverController.y().onTrue(Turret.zero())
+//        driverController.x().whileTrue(Drive.joystickDriveAlongLineSegment(Translation2d(0.0, 0.0), Translation2d(2.0, 10.0)))
 
 
         // Zero Gyro

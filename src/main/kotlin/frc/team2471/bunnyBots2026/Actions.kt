@@ -21,7 +21,7 @@ fun aim(targetSupplier: () -> Translation2d = { FieldManager.closestTowerPose })
         val angle = relativeTranslation.angle.measure
         val distance = relativeTranslation.norm.meters
         Extendavator.extensionSetpoint = distance
-        Turret.fieldCentricSetpoint = angle
+        Turret.goToFieldCentricAngle(angle)
         // raise elevator
     }.finallyRun(Extendavator.stow())
 }
