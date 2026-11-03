@@ -3,6 +3,7 @@ package frc.team2471.bunnyBots2026
 import edu.wpi.first.apriltag.AprilTag
 import edu.wpi.first.apriltag.AprilTagFieldLayout
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Pose3d
 import edu.wpi.first.math.geometry.Rotation3d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.geometry.Translation2d
@@ -45,6 +46,9 @@ object FieldManager {
     @get:AutoLogOutput(key = "FieldManager/closestTowerPose")
     val closestTowerPose get() = getClosestTowerPose(Drive.localizer.pose)
 
+                        //    Turret, Carriage, Extension, Intake
+    val components = arrayOf(Pose3d(), Pose3d(), Pose3d(), Pose3d())
+
     init {
     }
 
@@ -52,6 +56,7 @@ object FieldManager {
         Logger.recordOutput("FieldManager/allTags", *allAprilTags.map { it.pose }.toTypedArray())
         Logger.recordOutput("FieldManager/towerTagToCenterTransform", towerTagToCenterTransform)
         Logger.recordOutput("FieldManager/allTowers", *allTowerPositions.toTypedArray())
+        Logger.recordOutput("Components", *components)
     }
 
 
