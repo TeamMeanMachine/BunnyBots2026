@@ -10,6 +10,7 @@ import org.team2471.frc.lib.hardware.ctre.currentLimits
 import org.team2471.frc.lib.hardware.ctre.sensorToMechanismRatio
 import org.team2471.frc.lib.units.asFeet
 import org.team2471.frc.lib.units.feet
+import org.team2471.frc.lib.units.inches
 
 object Extendavator: SubsystemBase("Extendavator") {
 
@@ -21,11 +22,16 @@ object Extendavator: SubsystemBase("Extendavator") {
             elevatorMotor.setControl(PositionVoltage(value.asFeet))
             field = value
         }
+
+    val motorHeight get() = elevatorMotor.position.valueAsDouble.inches
+
     var extensionSetpoint = 0.0.feet
         set(value) {
             field = value.coerceIn(0.0.feet, 3.0.feet)
             extensionMotor.setControl(PositionVoltage(field.asFeet))
         }
+
+    val motorExtension get() = extensionMotor.position.valueAsDouble.inches
 
     init {
         elevatorMotor.applyConfiguration {

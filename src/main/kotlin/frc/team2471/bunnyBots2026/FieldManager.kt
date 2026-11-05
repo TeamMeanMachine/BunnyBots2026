@@ -7,16 +7,21 @@ import edu.wpi.first.math.geometry.Pose3d
 import edu.wpi.first.math.geometry.Rotation3d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.geometry.Translation2d
+import edu.wpi.first.math.geometry.Translation3d
 import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.units.measure.Angle
+import edu.wpi.first.units.measure.Distance
 import edu.wpi.first.wpilibj.Filesystem
-import frc.team2471.bunnyBots2026.FieldManager.reflectAcrossField
-import frc.team2471.bunnyBots2026.FieldManager.rotateAroundField
+import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.isRedAlliance
+import kotlin.math.cos
+import kotlin.math.sin
 
-object FieldManager {
+object FieldManager: SubsystemBase() {
     private val table = NetworkTableInstance.getDefault().getTable("FieldManager")
 
     val aprilTagFieldLayout: AprilTagFieldLayout = AprilTagFieldLayout(Filesystem.getDeployDirectory().path + "/bunnybotsTags.json")
@@ -46,8 +51,31 @@ object FieldManager {
     @get:AutoLogOutput(key = "FieldManager/closestTowerPose")
     val closestTowerPose get() = getClosestTowerPose(Drive.localizer.pose)
 
+
+    private val wristComponentOffset = Translation3d(0.31, 0.0, 0.445)
                         //    Turret, Carriage, Extension, Intake
-    val components = arrayOf(Pose3d(), Pose3d(), Pose3d(), Pose3d())
+    @get:AutoLogOutput(key = "Components/measuredComponents")
+    val measuredComponents: Array<Pose3d>
+        get() {
+            return createComponentArray(
+                Turret.robotCentricPosition,
+                Extendavator.motorHeight,
+                Extendavator.motorExtension,
+                Intake.wristMotor.position.value
+            )
+        }
+
+    @get:AutoLogOutput(key = "Components/setpointComponents")
+    val setpointComponents: Array<Pose3d>
+        get() {
+            return createComponentArray(
+                Turret.robotCentricSetpoint,
+                Extendavator.heightSetpoint,
+                Extendavator.extensionSetpoint,
+                Intake.wristMotorSetpoint
+            )
+        }
+    val timer = Timer().apply { start() }
 
     init {
     }
@@ -56,7 +84,26 @@ object FieldManager {
         Logger.recordOutput("FieldManager/allTags", *allAprilTags.map { it.pose }.toTypedArray())
         Logger.recordOutput("FieldManager/towerTagToCenterTransform", towerTagToCenterTransform)
         Logger.recordOutput("FieldManager/allTowers", *allTowerPositions.toTypedArray())
-        Logger.recordOutput("Components", *components)
+        Logger.recordOutput("Components/Zero", *arrayOf(Pose3d(), Pose3d(), Pose3d(), Pose3d()))
+    }
+
+    override fun periodic() {
+        val t = timer.get()
+        val turretAngle = t / 10.0
+        val turretRotation = Rotation3d(0.0, 0.0, turretAngle)
+        val carriageHeight = (t/5.0).mod(1.5)
+        val extensionDistance = (t/5.0).mod(0.33)
+        val extensionTranslation = Translation3d(extensionDistance * cos(turretAngle), extensionDistance * sin(turretAngle), carriageHeight)
+        val wristExtensionDistance = extensionDistance + wristComponentOffset.x
+        val wristTranslation = Translation3d(wristExtensionDistance * cos(turretAngle), wristExtensionDistance * sin(turretAngle), carriageHeight + wristComponentOffset.z)
+
+
+        val components = arrayOf(
+            Pose3d(Translation3d(0.0, 0.0, 0.0), Rotation3d(0.0, 0.0, turretAngle)),
+            Pose3d(Translation3d(0.0, 0.0, carriageHeight), Rotation3d(0.0, 0.0, turretAngle)),
+            Pose3d(extensionTranslation, Rotation3d(0.0, 0.0, turretAngle)),
+            Pose3d(wristTranslation, Rotation3d(0.0, t*2.0, turretAngle)))
+        Logger.recordOutput("Components/Test", *components)
     }
 
 
@@ -65,6 +112,23 @@ object FieldManager {
     }
     fun getClosestTowerPose(pose: Pose2d): Translation2d {
         return getClosestTower(pose).pose
+    }
+
+
+    fun createComponentArray(turretAngle: Angle, carriageHeight: Distance, extensionDistance: Distance, wristAngle: Angle): Array<Pose3d> {
+        val turretRotation = Rotation3d(0.0.degrees, 0.0.degrees, turretAngle)
+        val wristRotation = Rotation3d(0.0.degrees, wristAngle, turretAngle)
+
+        val extensionTranslation = Translation3d(extensionDistance * cos(turretAngle), extensionDistance * sin(turretAngle), carriageHeight)
+        val wristExtensionDistance = extensionDistance + wristComponentOffset.x.meters
+        val wristTranslation = Translation3d(wristExtensionDistance * cos(turretAngle), wristExtensionDistance * sin(turretAngle), carriageHeight + wristComponentOffset.z.meters)
+
+        return arrayOf(
+            Pose3d(Translation3d(), turretRotation),
+            Pose3d(Translation3d(0.0, 0.0, carriageHeight.asMeters), turretRotation),
+            Pose3d(extensionTranslation, turretRotation),
+            Pose3d(wristTranslation, wristRotation)
+        )
     }
 
 

@@ -40,6 +40,8 @@ object Turret: SubsystemBase("Turret") {
             turretMotor.setControl(PositionVoltage(field))
         }
 
+    val robotCentricPosition get() = turretMotor.position.value
+
     fun goToFieldCentricAngle(angle: Angle) {
         robotCentricSetpoint = (angle - Drive.heading.measure)
     }
