@@ -18,6 +18,7 @@ import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.isRedAlliance
+import org.team2471.frc.lib.util.isSim
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -88,22 +89,24 @@ object FieldManager: SubsystemBase() {
     }
 
     override fun periodic() {
-        val t = timer.get()
-        val turretAngle = t / 10.0
-        val turretRotation = Rotation3d(0.0, 0.0, turretAngle)
-        val carriageHeight = (t/5.0).mod(1.5)
-        val extensionDistance = (t/5.0).mod(0.33)
-        val extensionTranslation = Translation3d(extensionDistance * cos(turretAngle), extensionDistance * sin(turretAngle), carriageHeight)
-        val wristExtensionDistance = extensionDistance + wristComponentOffset.x
-        val wristTranslation = Translation3d(wristExtensionDistance * cos(turretAngle), wristExtensionDistance * sin(turretAngle), carriageHeight + wristComponentOffset.z)
+        if (isSim) {
+            val t = timer.get()
+            val turretAngle = t / 10.0
+            val turretRotation = Rotation3d(0.0, 0.0, turretAngle)
+            val carriageHeight = (t/5.0).mod(1.5)
+            val extensionDistance = (t/5.0).mod(0.33)
+            val extensionTranslation = Translation3d(extensionDistance * cos(turretAngle), extensionDistance * sin(turretAngle), carriageHeight)
+            val wristExtensionDistance = extensionDistance + wristComponentOffset.x
+            val wristTranslation = Translation3d(wristExtensionDistance * cos(turretAngle), wristExtensionDistance * sin(turretAngle), carriageHeight + wristComponentOffset.z)
 
 
-        val components = arrayOf(
-            Pose3d(Translation3d(0.0, 0.0, 0.0), Rotation3d(0.0, 0.0, turretAngle)),
-            Pose3d(Translation3d(0.0, 0.0, carriageHeight), Rotation3d(0.0, 0.0, turretAngle)),
-            Pose3d(extensionTranslation, Rotation3d(0.0, 0.0, turretAngle)),
-            Pose3d(wristTranslation, Rotation3d(0.0, t*2.0, turretAngle)))
-        Logger.recordOutput("Components/Test", *components)
+            val components = arrayOf(
+                Pose3d(Translation3d(0.0, 0.0, 0.0), Rotation3d(0.0, 0.0, turretAngle)),
+                Pose3d(Translation3d(0.0, 0.0, carriageHeight), Rotation3d(0.0, 0.0, turretAngle)),
+                Pose3d(extensionTranslation, Rotation3d(0.0, 0.0, turretAngle)),
+                Pose3d(wristTranslation, Rotation3d(0.0, t*2.0, turretAngle)))
+            Logger.recordOutput("Components/Test", *components)
+        }
     }
 
 
