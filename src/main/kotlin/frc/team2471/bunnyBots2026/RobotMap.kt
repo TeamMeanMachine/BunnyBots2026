@@ -26,7 +26,7 @@ object Talons {
     const val BACK_LEFT_STEER = 11
 
     const val INTAKE_ROLLER = -1
-    const val INTAKE_WRIST = -1
+    const val INTAKE_PIVOT = -1
     const val ELEVATOR_0 = -1
     const val ELEVATOR_1 = -1
     const val EXTENSION = -1

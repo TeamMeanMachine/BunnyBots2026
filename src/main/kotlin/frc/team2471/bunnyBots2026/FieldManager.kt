@@ -47,8 +47,8 @@ object FieldManager: SubsystemBase() {
 
     val lineupRadius = 3.0.feet
 
-    @get:AutoLogOutput(key = "FieldManager/closestTowerPose")
-    val closestTowerPose get() = getClosestTowerPose(Drive.localizer.pose)
+    @get:AutoLogOutput(key = "FieldManager/closestTower")
+    val closestTower get() = getClosestTower(Drive.localizer.pose)
 
 
     private val wristComponentOffset = Translation3d(0.31, 0.0, 0.445)
@@ -58,9 +58,9 @@ object FieldManager: SubsystemBase() {
         get() {
             return createComponentArray(
                 Turret.robotCentricPosition,
-                Extendavator.motorHeight,
-                Extendavator.motorExtension,
-                Intake.wristMotor.position.value
+                Extendavator.elevatorHeight,
+                Extendavator.extensionDistance,
+                Extendavator.pivotMotor.position.value
             )
         }
 
@@ -71,7 +71,7 @@ object FieldManager: SubsystemBase() {
                 Turret.robotCentricSetpoint,
                 Extendavator.heightSetpoint,
                 Extendavator.extensionSetpoint,
-                Intake.wristMotorSetpoint
+                Extendavator.pivotSetpoint
             )
         }
     private val timer = Timer().apply { start() }
