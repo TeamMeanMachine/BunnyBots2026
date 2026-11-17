@@ -5,6 +5,7 @@ import com.ctre.phoenix6.controls.NeutralOut
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.hardware.TalonFX
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.measure.Angle
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj2.command.Command
@@ -19,6 +20,8 @@ import org.team2471.frc.lib.control.commands.waitUntilCommand
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
 import org.team2471.frc.lib.hardware.ctre.currentLimits
+import org.team2471.frc.lib.hardware.ctre.p
+import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.unWrap
@@ -27,7 +30,7 @@ import org.team2471.frc.lib.util.translation
 object Turret: SubsystemBase("Turret") {
     val ZERO_POSITION = 0.0.degrees
 
-    val turretMotor = TalonFX(Talons.TURRET_0)
+    val turretMotor = LoggedTalonFX(Talons.TURRET_0)
     val zeroLimitSwitch = DigitalInput(DigitalSensors.TURRET_ZERO_SWITCH)
     val zeroLimitSwitchPressed get() = zeroLimitSwitch.get()
 
@@ -50,8 +53,12 @@ object Turret: SubsystemBase("Turret") {
     init {
         turretMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
+
+            p(0.4)
         }
         turretMotor.addFollower(Talons.TURRET_1)
+
+        turretMotor.configSim(DCMotor.getKrakenX60(2), 0.01)
     }
 
     override fun periodic() {

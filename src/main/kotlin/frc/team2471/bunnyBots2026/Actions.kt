@@ -24,7 +24,7 @@ fun aim(targetSupplier: () -> FieldManager.Tower = { FieldManager.closestTower }
             Turret.goToFieldCentricAngle(angle)
         },
         sequenceCommand(
-            waitUntilCommand { getRelative().norm.meters < 3.0.feet },
+            waitUntilCommand { getRelative().norm.meters < 4.0.feet },
             Extendavator.animateToPose(Pose.SCORE_BASE),
             runCommand(Extendavator) {
                 val distance = getRelative().norm.meters

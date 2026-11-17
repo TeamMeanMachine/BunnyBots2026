@@ -1,19 +1,27 @@
 package frc.team2471.bunnyBots2026
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.hardware.TalonFX
+import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.measure.Angle
+import edu.wpi.first.units.measure.AngularVelocity
 import edu.wpi.first.units.measure.Distance
+import edu.wpi.first.units.measure.LinearVelocity
 import edu.wpi.first.units.measure.Time
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import org.littletonrobotics.junction.AutoLogOutput
 import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
 import org.team2471.frc.lib.control.commands.runCommand
 import org.team2471.frc.lib.control.commands.runOnceCommand
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
 import org.team2471.frc.lib.hardware.ctre.currentLimits
+import org.team2471.frc.lib.hardware.ctre.motionMagic
+import org.team2471.frc.lib.hardware.ctre.p
 import org.team2471.frc.lib.hardware.ctre.sensorToMechanismRatio
+import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.units.absoluteValue
 import org.team2471.frc.lib.units.asDegrees
 import org.team2471.frc.lib.units.asDegreesPerSecond
@@ -29,37 +37,60 @@ import org.team2471.frc.lib.units.rotations
 import org.team2471.frc.lib.units.seconds
 
 object Extendavator: SubsystemBase("Extendavator") {
-    val elevatorMotor = TalonFX(Talons.ELEVATOR_0)
-    val extensionMotor = TalonFX(Talons.EXTENSION)
-    val pivotMotor = TalonFX(Talons.INTAKE_PIVOT)
+    val elevatorMotor = LoggedTalonFX(Talons.ELEVATOR_0)
+    val extensionMotor = LoggedTalonFX(Talons.EXTENSION)
+    val pivotMotor = LoggedTalonFX(Talons.INTAKE_PIVOT)
 
     val MAX_ELEVATOR_VELOCITY = 2.0.inchesPerSecond
     val MAX_EXTENSION_VELOCITY = 2.0.inchesPerSecond
     val MAX_PIVOT_VELOCITY = 2.0.degreesPerSecond
 
+    @get:AutoLogOutput(key = "Extendavator/heightSetpoint")
     var heightSetpoint = 0.0.feet
-        get() = elevatorMotor.closedLoopReference.valueAsDouble.inches
-        set(value) {
-            field = value.coerceIn(0.0.inches, 59.25.inches)
-            elevatorMotor.setControl(PositionVoltage(field.asInches))
+        private set
+    fun setHeight(value: Distance, velocity: LinearVelocity? = null) {
+        val safeValue = value.coerceIn(0.0.inches, 59.25.inches)
+        if (velocity != null) {
+            elevatorMotor.setControl(PositionVoltage(safeValue.asInches).withVelocity(velocity.asInchesPerSecond))
+        } else {
+            elevatorMotor.setControl(MotionMagicVoltage(safeValue.asInches))
         }
+        heightSetpoint = safeValue
+    }
 
-    var extensionSetpoint = 0.0.feet
-        get() = extensionMotor.closedLoopReference.valueAsDouble.inches
-        set(value) {
-            field = value.coerceIn(0.0.feet, 3.0.feet)
-            extensionMotor.setControl(PositionVoltage(field.asInches))
+    const val MIN_EXTENSION_DIST = 22.0 // inches
+    @get:AutoLogOutput(key = "Extendavator/extensionSetpoint")
+    var extensionSetpoint = MIN_EXTENSION_DIST.inches
+        private set
+    fun setExtension(value: Distance, velocity: LinearVelocity? = null) {
+        val safeValue = value.coerceIn(MIN_EXTENSION_DIST.inches, 3.5.feet)
+        if (velocity != null) {
+            extensionMotor.setControl(PositionVoltage(safeValue.asInches).withVelocity(velocity.asInchesPerSecond))
+        } else {
+            extensionMotor.setControl(MotionMagicVoltage(safeValue.asInches))
         }
+//        println("set exension $safeValue")
+        extensionSetpoint = safeValue
+    }
 
+    @get:AutoLogOutput(key = "Extendavator/extensionSetpoint")
     var pivotSetpoint = 0.0.degrees
-        get() = pivotMotor.closedLoopReference.valueAsDouble.rotations
-        set(value) {
-            pivotMotor.setControl(PositionVoltage(value))
-            field = value
+        private set
+    fun setPivot(value: Angle, velocity: AngularVelocity? = null) {
+        val safeValue = value.coerceIn(-45.0.degrees, 45.0.degrees)
+        if (velocity != null) {
+            pivotMotor.setControl(PositionVoltage(safeValue).withVelocity(velocity))
+        } else {
+            pivotMotor.setControl(MotionMagicVoltage(safeValue))
         }
+        pivotSetpoint = safeValue
+    }
 
+    @get:AutoLogOutput(key = "Extendavator/elevatorHeight")
     val elevatorHeight: Distance get() = elevatorMotor.position.valueAsDouble.inches
+    @get:AutoLogOutput(key = "Extendavator/extensionDistance")
     val extensionDistance: Distance get() = extensionMotor.position.valueAsDouble.inches
+    @get:AutoLogOutput(key = "Extendavator/pivotAngle")
     val pivotAngle: Angle get() = pivotMotor.position.value
 
     val heightError: Distance get() = elevatorMotor.closedLoopError.valueAsDouble.inches
@@ -80,29 +111,48 @@ object Extendavator: SubsystemBase("Extendavator") {
     val atMotionMagicSetpoint get() = heightMMAtSetpoint && extensionMMAtSetpoint && pivotMMAtSetpoint
 
     init {
+        zeroExtension()
+
         elevatorMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             sensorToMechanismRatio(5.33)
+            motionMagic(10.0, 20.0)
+
+            p(0.4)
         }
         elevatorMotor.addFollower(Talons.ELEVATOR_1)
+
+        elevatorMotor.configSim(DCMotor.getKrakenX60(2), 0.01)
+
         extensionMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             //        Motor to sprocket ratio * 12 tooth sprocket * 0.25in chain link length
             sensorToMechanismRatio((14.0/40.0) * 12.0 * 0.25)
+            motionMagic(10.0, 20.0)
+
+            p(0.4)
         }
+
+        extensionMotor.configSim(DCMotor.getKrakenX44(1), 0.01)
+
         pivotMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             sensorToMechanismRatio(33.75)
+            motionMagic(10.0, 20.0)
+
+            p(0.4)
         }
+
+        pivotMotor.configSim(DCMotor.getKrakenX44(1), 0.01)
     }
 
     fun stow(): Command = animateToPose(Pose.DRIVE)
 
 
     fun goToPose(pose: Pose) {
-        heightSetpoint = pose.elevatorHeight
-        extensionSetpoint = pose.extensionDistance
-        pivotSetpoint = pose.pivotAngle
+        setHeight(pose.elevatorHeight)
+        setExtension(pose.extensionDistance)
+        setPivot(pose.pivotAngle)
     }
 
     fun goToPoseWithTime(pose: Pose, maxTime: Time) {
@@ -111,9 +161,9 @@ object Extendavator: SubsystemBase("Extendavator") {
         val extensionVelocity = difference.extensionDistance / maxTime
         val pivotVelocity = difference.pivotAngle / maxTime
 
-        elevatorMotor.setControl(PositionVoltage(pose.elevatorHeight.asInches).withVelocity(elevatorVelocity.asInchesPerSecond))
-        extensionMotor.setControl(PositionVoltage(pose.elevatorHeight.asInches).withVelocity(extensionVelocity.asInchesPerSecond))
-        pivotMotor.setControl(PositionVoltage(pose.pivotAngle).withVelocity(pivotVelocity))
+        setHeight(pose.elevatorHeight, elevatorVelocity)
+        setExtension(pose.extensionDistance, extensionVelocity)
+        setPivot(pose.pivotAngle, pivotVelocity)
     }
 
 
@@ -125,8 +175,10 @@ object Extendavator: SubsystemBase("Extendavator") {
         val maxTime = maxOf(timeForElevator, timeForExtension, timeForPivot)
         goToPoseWithTime(pose, maxTime)
 
+    }.onlyRunWhileFalse { atSetpoint }
 
-
-    }.onlyRunWhileFalse { atMotionMagicSetpoint }
+    fun zeroExtension() {
+        extensionMotor.setPosition(MIN_EXTENSION_DIST)
+    }
 
 }

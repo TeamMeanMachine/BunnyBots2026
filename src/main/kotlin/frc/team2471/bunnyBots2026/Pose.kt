@@ -20,7 +20,7 @@ data class Pose(val elevatorHeight: Distance, val extensionDistance: Distance, v
 
 
         val DRIVE = Pose(0.0.inches, 0.0.inches, 0.0.degrees)
-        val INTAKE = Pose(0.0.inches, 10.0.inches, 10.0.degrees)
+        val INTAKE = Pose(0.0.inches, 30.0.inches, 10.0.degrees)
         val SCORE_BASE = Pose(3.0.feet, 0.0.inches, 0.0.degrees)
 
         fun generateScorePoseForTower(tower: FieldManager.Tower, distance: Distance = SCORE_BASE.extensionDistance): Pose {

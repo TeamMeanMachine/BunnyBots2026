@@ -47,7 +47,6 @@ object FieldManager: SubsystemBase() {
 
     val lineupRadius = 3.0.feet
 
-    @get:AutoLogOutput(key = "FieldManager/closestTower")
     val closestTower get() = getClosestTower(Drive.localizer.pose)
 
 
@@ -59,7 +58,7 @@ object FieldManager: SubsystemBase() {
             return createComponentArray(
                 Turret.robotCentricPosition,
                 Extendavator.elevatorHeight,
-                Extendavator.extensionDistance,
+                Extendavator.extensionDistance - Extendavator.MIN_EXTENSION_DIST.inches,
                 Extendavator.pivotMotor.position.value
             )
         }
@@ -70,7 +69,7 @@ object FieldManager: SubsystemBase() {
             return createComponentArray(
                 Turret.robotCentricSetpoint,
                 Extendavator.heightSetpoint,
-                Extendavator.extensionSetpoint,
+                Extendavator.extensionSetpoint - Extendavator.MIN_EXTENSION_DIST.inches,
                 Extendavator.pivotSetpoint
             )
         }
