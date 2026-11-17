@@ -25,13 +25,13 @@ object Talons {
     const val BACK_LEFT_DRIVE = 10
     const val BACK_LEFT_STEER = 11
 
-    const val INTAKE_ROLLER = -1
-    const val INTAKE_PIVOT = -1
-    const val ELEVATOR_0 = -1
-    const val ELEVATOR_1 = -1
-    const val EXTENSION = -1
-    const val TURRET_0 = -1
-    const val TURRET_1 = -1
+    const val INTAKE_ROLLER = 54
+    const val INTAKE_PIVOT = 55
+    const val ELEVATOR_0 = 60
+    const val ELEVATOR_1 = 59
+    const val EXTENSION = 58
+    const val TURRET_0 = 57
+    const val TURRET_1 = 56
 }
 
 object CANCoders {
@@ -51,7 +51,7 @@ object CANivores {
 }
 
 object CANSensors {
-    const val PIGEON = -1
+    const val PIGEON = 52
 }
 
 object I2CPort {
