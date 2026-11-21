@@ -66,7 +66,7 @@ object FieldManager: SubsystemBase() {
             return createComponentArray(
                 Turret.robotCentricPosition,
                 Extendavator.elevatorHeight,
-                Extendavator.extensionDistance - Extendavator.MIN_EXTENSION_DIST.inches,
+                Extendavator.extensionDistance - Extendavator.MIN_EXTENSION_DIST,
                 Extendavator.pivotMotor.position.value
             )
         }
@@ -77,7 +77,7 @@ object FieldManager: SubsystemBase() {
             return createComponentArray(
                 Turret.robotCentricSetpoint,
                 Extendavator.heightSetpoint,
-                Extendavator.extensionSetpoint - Extendavator.MIN_EXTENSION_DIST.inches,
+                Extendavator.extensionSetpoint - Extendavator.MIN_EXTENSION_DIST,
                 Extendavator.pivotSetpoint
             )
         }

@@ -62,13 +62,14 @@ object Extendavator: SubsystemBase("Extendavator") {
         heightSetpoint = safeValue
     }
 
-    const val MIN_EXTENSION_DIST = 22.0 // inches
+    val MIN_EXTENSION_DIST = 22.0.inches
+    val MAX_EXTENSION_DIST = 3.5.feet
     @get:AutoLogOutput(key = "Extendavator/extensionSetpoint")
-    var extensionSetpoint = MIN_EXTENSION_DIST.inches
+    var extensionSetpoint = MIN_EXTENSION_DIST
         private set
 
     fun setExtension(value: Distance, velocity: LinearVelocity? = null) {
-        val safeValue = value.coerceIn(MIN_EXTENSION_DIST.inches, 3.5.feet)
+        val safeValue = value.coerceIn(MIN_EXTENSION_DIST, MAX_EXTENSION_DIST)
         if (velocity != null) {
             extensionMotor.setControl(PositionVoltage(safeValue.asInches).withVelocity(velocity.asInchesPerSecond))
         } else {
@@ -196,7 +197,7 @@ object Extendavator: SubsystemBase("Extendavator") {
     }.until { atSetpoint }
 
     fun zeroExtension() {
-        extensionMotor.setPosition(MIN_EXTENSION_DIST)
+        extensionMotor.setPosition(MIN_EXTENSION_DIST.asInches)
     }
 
 

@@ -90,10 +90,11 @@ object OI: SubsystemBase("OI") {
 
         driverController.a().onTrue(runOnceCommand(Extendavator) { Extendavator.stow() })
 
+        driverController.rightTrigger().whileTrue(score())
+        driverController.leftTrigger(0.1).whileTrue(groundIntake())
 
 
         driverController.x().whileTrue(simpleLineUpAndAim())
-        driverController.rightTrigger().whileTrue(score())
         driverController.b().whileTrue(Turret.pointTowardDriveTranslation())
         driverController.y().onTrue(Turret.zero())
 //        driverController.x().whileTrue(Drive.joystickDriveAlongLineSegment(Translation2d(0.0, 0.0), Translation2d(2.0, 10.0)))

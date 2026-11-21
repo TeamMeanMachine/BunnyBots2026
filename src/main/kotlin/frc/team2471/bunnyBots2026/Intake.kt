@@ -14,7 +14,7 @@ import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 object Intake: SubsystemBase("Intake") {
 
     val rollerMotor = LoggedTalonFX(Talons.INTAKE_ROLLER)
-    val canRange = CANrange(-1)
+    val canRange = CANrange(CANSensors.INTAKE_CANRANGE)
 
     @get:AutoLogOutput(key = "Intake/rollerSetpoint")
     var rollerSetpoint = 0.0

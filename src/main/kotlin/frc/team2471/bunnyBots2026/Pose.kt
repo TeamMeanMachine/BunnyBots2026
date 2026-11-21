@@ -10,6 +10,7 @@ import org.team2471.frc.lib.units.inches
 data class Pose(val elevatorHeight: Distance, val extensionDistance: Distance, val pivotAngle: Angle) {
     operator fun minus(other: Pose) = Pose(this.elevatorHeight - other.elevatorHeight, this.extensionDistance - other.extensionDistance, this.pivotAngle - other.pivotAngle)
     operator fun plus(other: Pose) = Pose(this.elevatorHeight + other.elevatorHeight, this.extensionDistance + other.extensionDistance, this.pivotAngle + other.pivotAngle)
+    operator fun times(scalar: Double) = Pose(elevatorHeight * scalar, extensionDistance * scalar, pivotAngle * scalar)
 
     fun absoluteValue() = Pose(elevatorHeight.absoluteValue(), extensionDistance.absoluteValue(), pivotAngle.absoluteValue())
 
@@ -20,7 +21,8 @@ data class Pose(val elevatorHeight: Distance, val extensionDistance: Distance, v
 
 
         val DRIVE = Pose(0.0.inches, 0.0.inches, 0.0.degrees)
-        val INTAKE = Pose(0.0.inches, 30.0.inches, 10.0.degrees)
+        val INTAKE_MIN = Pose(0.0.inches, 30.0.inches, 10.0.degrees)
+        val INTAKE_MAX = Pose(0.0.inches, Extendavator.MAX_EXTENSION_DIST, 10.0.degrees)
         val SCORE_BASE = Pose(3.0.feet, 0.0.inches, 0.0.degrees)
 
         fun generateScorePoseForTower(tower: FieldManager.Tower, distance: Distance = SCORE_BASE.extensionDistance): Pose {

@@ -10,6 +10,7 @@ import org.team2471.frc.lib.control.commands.runCommand
 import org.team2471.frc.lib.control.commands.runOnceCommand
 import org.team2471.frc.lib.control.commands.sequenceCommand
 import org.team2471.frc.lib.control.commands.waitUntilCommand
+import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.feet
 import org.team2471.frc.lib.units.inches
@@ -85,5 +86,22 @@ fun score(towerSupplier: () -> FieldManager.Tower = { FieldManager.closestTower 
     }.finallyRun {
         Intake.currentState = Intake.State.OFF
         towerSupplier().stackSize++
+    }
+}
+
+fun groundIntake(): Command {
+    return sequenceCommand(
+        Extendavator.animateToPoseCmd(Pose.DRIVE),
+        runCommand(Extendavator) {
+            val startingIntakePose = Pose.INTAKE_MIN
+            val endingIntakePose = Pose.INTAKE_MAX
+            val difference = endingIntakePose - startingIntakePose
+            val intakePose = startingIntakePose + difference * OI.driverController.leftTriggerAxis.deadband(0.5)
+            Extendavator.goToPose(intakePose)
+            Intake.currentState = Intake.State.INTAKE
+        }
+    ).finallyRun {
+        Intake.currentState = Intake.State.OFF
+        Extendavator.stow()
     }
 }

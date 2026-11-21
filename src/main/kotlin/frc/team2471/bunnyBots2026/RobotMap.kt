@@ -52,6 +52,7 @@ object CANivores {
 
 object CANSensors {
     const val PIGEON = 52
+    const val INTAKE_CANRANGE = -1
 }
 
 object I2CPort {
