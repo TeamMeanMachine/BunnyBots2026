@@ -39,6 +39,7 @@ import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.inches
 import org.team2471.frc.lib.math.DynamicInterpolatingTreeMap
+import org.team2471.frc.lib.math.findClosestPointOnCircle
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.asRadians
 import org.team2471.frc.lib.units.asRadiansPerSecond
@@ -46,6 +47,7 @@ import org.team2471.frc.lib.units.inchesPerSecond
 import org.team2471.frc.lib.units.metersPerSecondPerSecond
 import org.team2471.frc.lib.units.perSecond
 import org.team2471.frc.lib.units.unWrap
+import org.team2471.frc.lib.util.angleTo
 import org.team2471.frc.lib.util.demoSpeed
 import org.team2471.frc.lib.util.isBlueAlliance
 import org.team2471.frc.lib.vision.Fiducial
@@ -284,5 +286,14 @@ object Drive: SwerveDriveSubsystem(TunerConstants.drivetrainConstants, *TunerCon
         println("resetting odometry to localizer pose")
         val localizerPose = localizer.pose
         pose = Pose2d(localizerPose.translation, pose.rotation)
+    }
+
+
+    fun calculateLineupPoseToTower(tower: FieldManager.Tower, poseSupplier: () -> Pose2d = { localizer.pose }): Pose2d {
+        val currentPose = poseSupplier().translation
+        val lineupTranslation = findClosestPointOnCircle(tower.pose, FieldManager.lineupRadius, currentPose)
+        val lineupHeading = currentPose.angleTo(lineupTranslation).asRotation2d
+        val lineupPose = Pose2d(lineupTranslation, lineupHeading)
+        return lineupPose
     }
 }

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Alert
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.control.MeanCommandXboxController
+import org.team2471.frc.lib.control.commands.runOnceCommand
 import org.team2471.frc.lib.control.commands.toCommand
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.normalize
@@ -87,10 +88,19 @@ object OI: SubsystemBase("OI") {
         Drive.defaultCommand = Drive.joystickPercentageDrive()
 
 
-        driverController.a().whileTrue(lineUp())
+        driverController.a().onTrue(runOnceCommand(Extendavator) { Extendavator.stow() })
+
+
+
+        driverController.x().whileTrue(simpleLineUpAndAim())
+        driverController.rightTrigger().whileTrue(score())
         driverController.b().whileTrue(Turret.pointTowardDriveTranslation())
         driverController.y().onTrue(Turret.zero())
 //        driverController.x().whileTrue(Drive.joystickDriveAlongLineSegment(Translation2d(0.0, 0.0), Translation2d(2.0, 10.0)))
+
+
+        driverController.povUp().onTrue(runOnceCommand { FieldManager.closestTower.stackSize += 2; println("Move stack up. ${FieldManager.closestTower.stackSize}") })
+        driverController.povDown().onTrue(runOnceCommand { FieldManager.closestTower.stackSize -= 2; println("Move stack down. ${FieldManager.closestTower.stackSize}") })
 
 
         // Zero Gyro

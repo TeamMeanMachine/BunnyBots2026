@@ -4,6 +4,7 @@ import edu.wpi.first.apriltag.AprilTag
 import edu.wpi.first.apriltag.AprilTagFieldLayout
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Pose3d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Rotation3d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.geometry.Translation2d
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.math.toPose2d
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.isRedAlliance
 import org.team2471.frc.lib.util.isSim
@@ -47,7 +49,13 @@ object FieldManager: SubsystemBase() {
 
     val lineupRadius = 3.0.feet
 
-    val closestTower get() = getClosestTower(Drive.localizer.pose)
+    @get:AutoLogOutput(key = "FieldManager/lookaheadPose")
+    val lookaheadPose get() = (Drive.localizer.pose.translation + Drive.wantedVelocity * 0.55).toPose2d(Drive.heading)
+
+    val closestTower get() = getClosestTower(lookaheadPose)
+
+    @get:AutoLogOutput(key = "FieldManager/closestTowerPose")
+    val closestTowerPose get() = closestTower.pose.toPose2d(Rotation2d())
 
 
     private val wristComponentOffset = Translation3d(0.31, 0.0, 0.445)

@@ -11,6 +11,7 @@ import edu.wpi.first.units.measure.Time
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import org.littletonrobotics.junction.AutoLogOutput
+import org.team2471.frc.lib.control.commands.runCommand
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
 import org.team2471.frc.lib.hardware.ctre.currentLimits
@@ -39,9 +40,9 @@ object Extendavator: SubsystemBase("Extendavator") {
     val extensionMotor = LoggedTalonFX(Talons.EXTENSION)
     val pivotMotor = LoggedTalonFX(Talons.INTAKE_PIVOT)
 
-    val MAX_ELEVATOR_VELOCITY = 10.0.inchesPerSecond
-    val MAX_EXTENSION_VELOCITY = 10.0.inchesPerSecond
-    val MAX_PIVOT_VELOCITY = 2.0.degreesPerSecond
+    val MAX_ELEVATOR_VELOCITY = 30.0.inchesPerSecond
+    val MAX_EXTENSION_VELOCITY = 30.0.inchesPerSecond
+    val MAX_PIVOT_VELOCITY = 50.0.degreesPerSecond
 
     val MAX_ELEVATOR_ACCELERATION = 10.0.inchesPerSecondPerSecond
     val MAX_EXTENSION_ACCELERATION = 10.0.inchesPerSecondPerSecond
@@ -154,13 +155,14 @@ object Extendavator: SubsystemBase("Extendavator") {
         pivotMotor.configSim(DCMotor.getKrakenX44(1), 0.01)
     }
 
-    fun stow(): Command = animateToPose(Pose.DRIVE)
+    fun stow() = goToPose(Pose.DRIVE)
 
-
-    fun goToPose(pose: Pose) {
-        setHeight(pose.elevatorHeight)
-        setExtension(pose.extensionDistance)
-        setPivot(pose.pivotAngle)
+    fun goToPose(pose: Pose, instant: Boolean = true) {
+        if (instant) {
+            goToPoseWithTime(pose, calculateAnimationTime(pose))
+        } else {
+            goToPoseInstant(pose)
+        }
     }
 
     fun goToPoseWithTime(pose: Pose, maxTime: Time) {
@@ -174,19 +176,36 @@ object Extendavator: SubsystemBase("Extendavator") {
         setPivot(pose.pivotAngle, pivotVelocity)
     }
 
+    fun goToPoseInstant(pose: Pose) {
+        setHeight(pose.elevatorHeight)
+        setExtension(pose.extensionDistance)
+        setPivot(pose.pivotAngle)
+    }
 
-    fun animateToPose(pose: Pose) = run {
-        val difference = pose - Pose.current
+    fun calculateAnimationTime(setpointPose: Pose, currentPose: Pose = Pose.current): Time {
+        val difference = setpointPose - currentPose
         val timeForElevator = difference.elevatorHeight / MAX_ELEVATOR_VELOCITY
         val timeForExtension = difference.extensionDistance / MAX_EXTENSION_VELOCITY
-        val timeForPivot = (difference.pivotAngle.asDegrees / MAX_PIVOT_VELOCITY.asDegreesPerSecond).seconds // TODO: PR WPILIB `difference.pivotAngle / MAX_PIVOT_VELOCITY`
-        val maxTime = maxOf(timeForElevator, timeForExtension, timeForPivot)
-        goToPoseWithTime(pose, maxTime)
+        val timeForPivot = (difference.pivotAngle.asDegrees / MAX_PIVOT_VELOCITY.asDegreesPerSecond).seconds
+        return maxOf(timeForElevator, timeForExtension, timeForPivot)
+    }
 
+
+    fun animateToPoseCmd(pose: Pose): Command = run {
+        goToPoseWithTime(pose, calculateAnimationTime(pose))
     }.until { atSetpoint }
 
     fun zeroExtension() {
         extensionMotor.setPosition(MIN_EXTENSION_DIST)
+    }
+
+
+    fun simpleAimAtTower(tower: () -> FieldManager.Tower): Command {
+        return runCommand(this) {
+            val pose = Pose.generateScorePoseForTower(tower())
+            val time = calculateAnimationTime(pose)
+            goToPoseWithTime(pose, time)
+        }
     }
 
 }

@@ -1,15 +1,18 @@
 package frc.team2471.bunnyBots2026
 
+import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.wpilibj2.command.Command
+import org.team2471.frc.lib.control.commands.beforeWaitUntil
 import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.control.commands.parallelCommand
 import org.team2471.frc.lib.control.commands.runCommand
+import org.team2471.frc.lib.control.commands.runOnceCommand
 import org.team2471.frc.lib.control.commands.sequenceCommand
 import org.team2471.frc.lib.control.commands.waitUntilCommand
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.feet
+import org.team2471.frc.lib.units.inches
 import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.rotations
 import org.team2471.frc.lib.util.angleTo
@@ -25,14 +28,16 @@ fun aim(targetSupplier: () -> FieldManager.Tower = { FieldManager.closestTower }
         },
         sequenceCommand(
             waitUntilCommand { getRelative().norm.meters < 4.0.feet },
-            Extendavator.animateToPose(Pose.SCORE_BASE),
+            Extendavator.animateToPoseCmd(Pose.SCORE_BASE),
             runCommand(Extendavator) {
                 val distance = getRelative().norm.meters
                 val pose = Pose.generateScorePoseForTower(targetSupplier.invoke(), distance)
                 Extendavator.goToPose(pose)
             }
         )
-    ).finallyRun(Extendavator.stow())
+    ).finallyRun {
+        Extendavator.stow()
+    }
 }
 
 fun lineUp(targetSupplier: () -> FieldManager.Tower = { FieldManager.closestTower }): Command {
@@ -48,4 +53,37 @@ fun lineUp(targetSupplier: () -> FieldManager.Tower = { FieldManager.closestTowe
         aim(targetSupplier),
         Drive.joystickDriveAlongCircle({ targetSupplier().pose }, FieldManager.lineupRadius, ::getLineUpHeading, { Drive.localizer.pose }) // ::getLineUpPose is the same as { getLineUpPose() }
     )
+}
+
+fun simpleLineUpAndAim(towerSupplier: () -> FieldManager.Tower = { FieldManager.closestTower }): Command {
+    var tower = towerSupplier()
+    var distanceFromTower = Double.MAX_VALUE.inches
+    var lineupPose = Pose2d()
+    return sequenceCommand(
+        runOnceCommand {
+            tower = towerSupplier()
+            distanceFromTower = Double.MAX_VALUE.inches
+            lineupPose = Drive.calculateLineupPoseToTower(tower)
+            println("simple line up. Tower id ${tower.id} pose ${tower.pose} lineup $lineupPose")
+        },
+        parallelCommand(
+            runCommand(Extendavator) {
+                Extendavator.goToPose(Pose.generateScorePoseForTower(tower))
+            }.beforeWaitUntil { distanceFromTower < 1.0.feet },
+            Drive.driveToAutopilotPoint({ lineupPose }, { Drive.localizer.pose },
+                earlyExit = { robotPose, target ->
+                    distanceFromTower = (target.reference - robotPose).translation.norm.meters
+                    Drive.autoPilot.atTarget(robotPose, target)
+                })
+        )
+    )
+}
+
+fun score(towerSupplier: () -> FieldManager.Tower = { FieldManager.closestTower }): Command {
+    return runCommand {
+        Intake.currentState = Intake.State.SPIT
+    }.finallyRun {
+        Intake.currentState = Intake.State.OFF
+        towerSupplier().stackSize++
+    }
 }
