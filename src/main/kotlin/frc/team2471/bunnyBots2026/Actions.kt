@@ -86,6 +86,7 @@ fun score(towerSupplier: () -> FieldManager.Tower = { FieldManager.closestTower 
     }.finallyRun {
         Intake.currentState = Intake.State.OFF
         towerSupplier().stackSize++
+        Extendavator.stow()
     }
 }
 
@@ -96,7 +97,7 @@ fun groundIntake(): Command {
             val startingIntakePose = Pose.INTAKE_MIN
             val endingIntakePose = Pose.INTAKE_MAX
             val difference = endingIntakePose - startingIntakePose
-            val intakePose = startingIntakePose + difference * OI.driverController.leftTriggerAxis.deadband(0.5)
+            val intakePose = startingIntakePose + difference * OI.driverController.leftTriggerAxis.deadband(0.25)
             Extendavator.goToPose(intakePose)
             Intake.currentState = Intake.State.INTAKE
         }

@@ -15,16 +15,14 @@ import org.team2471.frc.lib.control.commands.runCommand
 import org.team2471.frc.lib.hardware.ctre.addFollower
 import org.team2471.frc.lib.hardware.ctre.applyConfiguration
 import org.team2471.frc.lib.hardware.ctre.currentLimits
-import org.team2471.frc.lib.hardware.ctre.motionMagic
 import org.team2471.frc.lib.hardware.ctre.p
 import org.team2471.frc.lib.hardware.ctre.sensorToMechanismRatio
 import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.units.asDegrees
 import org.team2471.frc.lib.units.asDegreesPerSecond
-import org.team2471.frc.lib.units.asDegreesPerSecondPerSecond
 import org.team2471.frc.lib.units.asInches
 import org.team2471.frc.lib.units.asInchesPerSecond
-import org.team2471.frc.lib.units.asInchesPerSecondPerSecond
+import org.team2471.frc.lib.units.asRotations
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.degreesPerSecond
 import org.team2471.frc.lib.units.degreesPerSecondPerSecond
@@ -84,11 +82,11 @@ object Extendavator: SubsystemBase("Extendavator") {
         private set
 
     fun setPivot(value: Angle, velocity: AngularVelocity? = null) {
-        val safeValue = value.coerceIn(-45.0.degrees, 45.0.degrees)
+        val safeValue = value.coerceIn(-90.0.degrees, 0.0.degrees)
         if (velocity != null) {
-            pivotMotor.setControl(PositionVoltage(safeValue).withVelocity(velocity))
+            pivotMotor.setControl(PositionVoltage(safeValue.asRotations).withVelocity(velocity))
         } else {
-            pivotMotor.setControl(MotionMagicVoltage(safeValue))
+            pivotMotor.setControl(MotionMagicVoltage(safeValue.asRotations))
         }
         pivotSetpoint = safeValue
     }
@@ -123,37 +121,36 @@ object Extendavator: SubsystemBase("Extendavator") {
         elevatorMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             sensorToMechanismRatio(5.33)
+//            motionMagic(MAX_ELEVATOR_VELOCITY.asInchesPerSecond, MAX_ELEVATOR_ACCELERATION.asInchesPerSecondPerSecond)
 
-            motionMagic(MAX_ELEVATOR_VELOCITY.asInchesPerSecond, MAX_ELEVATOR_ACCELERATION.asInchesPerSecondPerSecond)
-
-            p(0.4)
+            p(18.0)
         }
         elevatorMotor.addFollower(Talons.ELEVATOR_1)
 
-        elevatorMotor.configSim(DCMotor.getKrakenX60(2), 0.01)
+        elevatorMotor.configSim(DCMotor.getKrakenX60(2), 0.0000000000001)
 
         extensionMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             //        Motor to sprocket ratio * 12 tooth sprocket * 0.25in chain link length
             sensorToMechanismRatio((14.0/40.0) * 12.0 * 0.25)
 
-            motionMagic(MAX_EXTENSION_VELOCITY.asInchesPerSecond, MAX_EXTENSION_ACCELERATION.asInchesPerSecondPerSecond)
+//            motionMagic(MAX_EXTENSION_VELOCITY.asInchesPerSecond, MAX_EXTENSION_ACCELERATION.asInchesPerSecondPerSecond)
 
             p(0.4)
         }
 
-        extensionMotor.configSim(DCMotor.getKrakenX44(1), 0.01)
+        extensionMotor.configSim(DCMotor.getKrakenX44(1), 0.0000000000001)
 
         pivotMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             sensorToMechanismRatio(33.75)
 
-            motionMagic(MAX_PIVOT_VELOCITY.asDegreesPerSecond, MAX_PIVOT_ACCELERATION.asDegreesPerSecondPerSecond)
+//            motionMagic(MAX_PIVOT_VELOCITY.asDegreesPerSecond, MAX_PIVOT_ACCELERATION.asDegreesPerSecondPerSecond)
 
-            p(0.4)
+            p(16.0)
         }
 
-        pivotMotor.configSim(DCMotor.getKrakenX44(1), 0.01)
+        pivotMotor.configSim(DCMotor.getKrakenX44(1), 0.00000001)
     }
 
     fun stow() = goToPose(Pose.DRIVE)

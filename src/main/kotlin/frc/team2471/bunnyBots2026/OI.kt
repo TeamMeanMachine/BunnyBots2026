@@ -91,7 +91,7 @@ object OI: SubsystemBase("OI") {
         driverController.a().onTrue(runOnceCommand(Extendavator) { Extendavator.stow() })
 
         driverController.rightTrigger().whileTrue(score())
-        driverController.leftTrigger(0.1).whileTrue(groundIntake())
+        driverController.leftTrigger(0.05).whileTrue(groundIntake())
 
 
         driverController.x().whileTrue(simpleLineUpAndAim())
