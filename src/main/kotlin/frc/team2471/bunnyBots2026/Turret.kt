@@ -3,7 +3,6 @@ package frc.team2471.bunnyBots2026
 import com.ctre.phoenix6.controls.DutyCycleOut
 import com.ctre.phoenix6.controls.NeutralOut
 import com.ctre.phoenix6.controls.PositionVoltage
-import com.ctre.phoenix6.hardware.TalonFX
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.measure.Angle
@@ -25,6 +24,7 @@ import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.unWrap
+import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.translation
 
 object Turret: SubsystemBase("Turret") {
@@ -76,10 +76,10 @@ object Turret: SubsystemBase("Turret") {
         return sequenceCommand(
             printlnCommand("Zeroing turret"),
             runOnceCommand { turretMotor.setControl(DutyCycleOut(-0.1)) },
-            waitUntilCommand { zeroLimitSwitchPressed },
-            waitUntilCommand { !zeroLimitSwitchPressed },
+            waitUntilCommand { zeroLimitSwitchPressed || isSim },
+            waitUntilCommand { !zeroLimitSwitchPressed || isSim },
             runOnceCommand { turretMotor.setControl(DutyCycleOut(0.02)) },
-            waitUntilCommand { zeroLimitSwitchPressed }
+            waitUntilCommand { zeroLimitSwitchPressed || isSim }
         ).finallyRun {
             turretMotor.setPosition(ZERO_POSITION)
             turretMotor.setControl(NeutralOut())

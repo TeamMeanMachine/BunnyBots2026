@@ -120,19 +120,19 @@ object Extendavator: SubsystemBase("Extendavator") {
 
         elevatorMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
-            sensorToMechanismRatio(5.33)
+            sensorToMechanismRatio(1.0/5.33)
 //            motionMagic(MAX_ELEVATOR_VELOCITY.asInchesPerSecond, MAX_ELEVATOR_ACCELERATION.asInchesPerSecondPerSecond)
 
-            p(18.0)
+            p(0.2)
         }
         elevatorMotor.addFollower(Talons.ELEVATOR_1)
 
-        elevatorMotor.configSim(DCMotor.getKrakenX60(2), 0.0000000000001)
+        elevatorMotor.configSim(DCMotor.getKrakenX60(2), 0.0001)
 
         extensionMotor.applyConfiguration {
             currentLimits(30.0, 40.0, 1.0)
             //        Motor to sprocket ratio * 12 tooth sprocket * 0.25in chain link length
-            sensorToMechanismRatio((14.0/40.0) * 12.0 * 0.25)
+            sensorToMechanismRatio(1.0/((14.0/40.0) * 12.0 * 0.25))
 
 //            motionMagic(MAX_EXTENSION_VELOCITY.asInchesPerSecond, MAX_EXTENSION_ACCELERATION.asInchesPerSecondPerSecond)
 
@@ -147,16 +147,16 @@ object Extendavator: SubsystemBase("Extendavator") {
 
 //            motionMagic(MAX_PIVOT_VELOCITY.asDegreesPerSecond, MAX_PIVOT_ACCELERATION.asDegreesPerSecondPerSecond)
 
-            p(16.0)
+            p(36.3)
         }
 
-        pivotMotor.configSim(DCMotor.getKrakenX44(1), 0.00000001)
+        pivotMotor.configSim(DCMotor.getKrakenX44(1), 0.00000000000001)
     }
 
     fun stow() = goToPose(Pose.DRIVE)
 
-    fun goToPose(pose: Pose, instant: Boolean = true) {
-        if (instant) {
+    fun goToPose(pose: Pose, together: Boolean = true) {
+        if (together) {
             goToPoseWithTime(pose, calculateAnimationTime(pose))
         } else {
             goToPoseInstant(pose)
